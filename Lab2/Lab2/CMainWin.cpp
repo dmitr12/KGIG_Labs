@@ -66,10 +66,14 @@ CMainWin::CMainWin()
 void CMainWin::OnPaint()
 {
 	CPaintDC dc(this);
-	HBITMAP bit = (HBITMAP)LoadImage(NULL, L"res/Ilya.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	if (opened)
 	{
+		FileDialog = new CFileDialog(true);
+		FileDialog->DoModal();
+		HBITMAP bit = (HBITMAP)LoadImage(NULL, FileDialog->GetPathName(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 		ShowBitMap(this->m_hWnd, bit, PaintPosition.x, PaintPosition.y);
+		delete FileDialog;
+		FileDialog = nullptr;
 		opened = false;
 	}
 	if (saved)
