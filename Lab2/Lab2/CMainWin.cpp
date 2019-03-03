@@ -49,7 +49,7 @@ int ClientToBmp(HWND hWnd, RECT& rect, CString str)
 	WriteFile(FileHandle, (LPSTR)&bitFile, sizeof(bitFile), &dwWritten, NULL);
 	WriteFile(FileHandle, (LPSTR)&bitInfo, sizeof(BITMAPINFOHEADER), &dwWritten, NULL);
 	char *lp = (char *)GlobalAlloc(GMEM_FIXED, bitInfo.biSizeImage);
-	int err = GetDIBits(ImageDC, BitMap, 0, (UINT)Height, lp, (LPBITMAPINFO)&bitInfo, DIB_RGB_COLORS);
+	GetDIBits(ImageDC, BitMap, 0, (UINT)Height, lp, (LPBITMAPINFO)&bitInfo, DIB_RGB_COLORS);
 	WriteFile(FileHandle, lp, bitInfo.biSizeImage, &dwWritten, NULL);
 	GlobalFree(GlobalHandle(lp));
 	CloseHandle(FileHandle);
@@ -75,7 +75,7 @@ void CMainWin::OnPaint()
 		delete FileDialog;
 		FileDialog = nullptr;
 		opened = false;
-	}
+	} 
 	if (saved)
 	{
 		FileDialog = new CFileDialog(false);
@@ -104,9 +104,9 @@ void CMainWin::OnLButtonUp(UINT Flags, CPoint Location)
 	}
 	if (SaveRect.top > SaveRect.bottom)
 	{
-		LONG buffer = SaveRect.left;
-		SaveRect.left = SaveRect.right;
-		SaveRect.right = buffer;
+		LONG buffer = SaveRect.top;
+		SaveRect.top = SaveRect.bottom;
+		SaveRect.bottom = buffer;
 	}
 	if (SaveRect.bottom - SaveRect.top > 5 && SaveRect.right - SaveRect.left > 5)
 		saved = true;
