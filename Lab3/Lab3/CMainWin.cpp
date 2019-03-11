@@ -10,6 +10,7 @@ class CRectD
 public:
 	double left, top, right, bottom;
 	CRectD() { left = top = right = bottom = 0; }
+	operator CRect() { return CRect(left, top, right, bottom); }
 };
 CMatrix SpaceToWindow(CRectD& rs, CRect& rw)
 {
@@ -25,9 +26,19 @@ CMatrix SpaceToWindow(CRectD& rs, CRect& rw)
 }
 void SetMyMode(CDC& dc, CRectD& rs, CRect& rw)
 { 
-	dc.SetMapMode(MM_ANISOTROPIC); 
-	SetWindowExtEx(dc, rw.left, rw.top, NULL);
-	SetViewportExtEx(dc, rs.left, rs.top, NULL);
+	int dsx = rs.right - rs.left,
+		dsy = rs.top - rs.bottom,
+		xsL = rs.left,
+		ysL = rs.bottom,
+		dwx = rw.right - rw.left,
+		dwy = rw.bottom - rw.top,
+		xwL = rw.left,
+		ywH = rw.bottom;
+	dc.SetMapMode(MM_ANISOTROPIC);
+	dc.SetWindowExt(dsx, dsy);
+	dc.SetViewportExt(dwx, -dwy);
+	dc.SetWindowOrg(xsL, ysL);
+	dc.SetViewportOrg(xwL, ywH);
 }
 struct CMyPen
 {
@@ -122,7 +133,27 @@ public:
 	}
 	void Draw1(CDC& dc, int Ind1, int Int2)
 	{
-		
+		CPen pen;
+		pen.CreatePen(0, 0, RGB(0, 0, 0));
+		dc.SelectObject(pen);
+		CRect Rss = Rs;
+		dc.Rectangle(Rss);
+		pen.Detach();
+		pen.CreatePen(PenAxis.PenStyle, PenAxis.PenWidth, PenAxis.PenColor);
+		dc.SelectObject(pen);
+		dc.MoveTo(Rs.left, 0);
+		dc.LineTo(Rs.right, 0);
+		dc.MoveTo(0, Rs.top);
+		dc.LineTo(0, Rs.bottom);
+		pen.Detach();
+		pen.CreatePen(PenLine.PenStyle, PenLine.PenWidth, PenLine.PenColor);
+		dc.SelectObject(pen);
+		if (Ind1 < X.rows() && Int2 <= X.rows())
+			for (int i = Ind1 + 1; i < X.rows(); i += Int2)
+			{
+				dc.MoveTo(X(i - 1), Y(i - 1));
+				dc.LineTo(X(i), Y(i));
+			}
 	}
 	void GetRS(CRectD& RS) { RS = Rs; }
 	void GetRW(CRect& RW) { RW = Rw; }
@@ -149,6 +180,8 @@ void CMainWin::PaintF1(CDC& dc)
 }
 void CMainWin::PaintF2(CDC& dc)
 {
+	CRect rw = CRect(300, 50, 700, 400);
+	CRectD rs;
 	CPlot2D paint2D;
 	CMyPen penLine, penAxis;
 	penAxis.Set(PS_SOLID, 2, RGB(0, 0, 255));
@@ -165,7 +198,9 @@ void CMainWin::PaintF2(CDC& dc)
 		Y(j) = MyF2(i);
 	}
 	paint2D.SetParams(X, Y);
-	paint2D.Draw(dc, 0, 1);
+	paint2D.GetRS(rs);
+	SetMyMode(dc, rs, rw);
+	paint2D.Draw1(dc, 0, 1);
 }
 void CMainWin::PaintF3(CDC& dc)
 {
@@ -189,6 +224,8 @@ void CMainWin::PaintF3(CDC& dc)
 }
 void CMainWin::PaintF4(CDC& dc)
 {
+	CRect rw = CRect(300, 50, 700, 400);
+	CRectD rs;
 	CPlot2D paint2D;
 	CMyPen penLine, penAxis;
 	penAxis.Set(PS_SOLID, 2, RGB(0, 0, 255));
@@ -205,7 +242,9 @@ void CMainWin::PaintF4(CDC& dc)
 		Y(j) = MyF4(i);
 	}
 	paint2D.SetParams(X, Y);
-	paint2D.Draw(dc, 0, 1);
+	paint2D.GetRS(rs);
+	SetMyMode(dc, rs, rw);
+	paint2D.Draw1(dc, 0, 1);
 }
 void CMainWin::PaintF1234(CDC& dc)
 {
